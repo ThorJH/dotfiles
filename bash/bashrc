@@ -138,6 +138,7 @@ alias mq='hg -R $(hg root)/.hg/patches'
 alias rvim="gvim --remote-silent"
 alias pypy-jitlog="PYPYLOG=jit-log-opt,jit-backend-counts:pypyjitlog.log pypy-c"
 alias ..='cd ..'
+alias ll='ls -l'
 shopt -s histappend
 
 if [ -f /usr/local/git/contrib/completion ]; then
