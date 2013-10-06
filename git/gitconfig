@@ -62,3 +62,5 @@
 	default=current
 [diff]
 	algorithm = patience
+[mergetool]
+	keepBackup = true
