@@ -1,10 +1,10 @@
 [user]
-	name = Armin Ronacher
-	email = armin.ronacher@active-4.com
+	name = Markus Ullmann
+	email = mail@markus-ullmann.de
 [core]
 	excludesfile = ~/.gitignore
 	autocrlf = input
-	editor = /usr/local/bin/vim
+	editor = /usr/local/bin/subl
 [color]
 	ui = auto
 [color "branch"]
@@ -58,8 +58,6 @@
 	serve = daemon --verbose --export-all --base-path=.git --reuseaddr --strict-paths .git/
 	serveall = daemon --verbose --export-all --base-path=. --reuseaddr .
 	addpr = "!f() { git fetch origin pull/$1/head:pr/$1; }; f"
-[instaweb]
-	httpd=webrick
 [push]
 	default=current
 [diff]
