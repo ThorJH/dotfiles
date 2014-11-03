@@ -2,6 +2,7 @@
 [ -z "$PS1" ] && return
 
 export EDITOR=vim
+export GIT_EDITOR=vim
 
 MITSUHIKOS_DEFAULT_COLOR="[00m"
 MITSUHIKOS_GRAY_COLOR="[37m"
@@ -61,10 +62,14 @@ mitsuhikos_virtualenv() {
     echo -n $' \033[37mworkon \033[31m'
     echo -n $ENV_NAME
     echo -n $'\033[00m'
+    # Shell title
+    echo -n $'\033]0;venv:'
+    echo -n $ENV_NAME
+    echo -n $'\007'
   fi
 }
 
-export MITSUHIKOS_BASEPROMPT='\n\e${MITSUHIKOS_USER_COLOR}\u \
+export MITSUHIKOS_BASEPROMPT='\e]0;\007\n\e${MITSUHIKOS_USER_COLOR}\u \
 \e${MITSUHIKOS_GRAY_COLOR}at \e${MITSUHIKOS_ORANGE_COLOR}\h \
 \e${MITSUHIKOS_GRAY_COLOR}in \e${MITSUHIKOS_GREEN_COLOR}\w\
 `mitsuhikos_lastcommandfailed`\
@@ -75,7 +80,7 @@ export MITSUHIKOS_BASEPROMPT='\n\e${MITSUHIKOS_USER_COLOR}\u \
 export PS1="\[\033[G\]${MITSUHIKOS_BASEPROMPT}
 $ "
 
-export TERM=xterm-color
+export TERM=xterm-256color
 export GREP_OPTIONS='--color=auto' GREP_COLOR='1;32'
 export CLICOLOR=1
 if [ `uname` == "Darwin" ]; then
@@ -85,7 +90,7 @@ if [ `uname` == "Darwin" ]; then
 else
   alias ls='ls --color=auto'
 fi
-export PATH=/usr/local/bin:/usr/local/sbin:/usr/local/git/bin:~/.bin:$PATH:~/.gem/ruby/1.8/bin
+export PATH=/usr/local/bin:/usr/local/sbin:/usr/local/git/bin:~/.bin:$PATH
 export IGNOREEOF=1
 export PYTHONDONTWRITEBYTECODE=1
 export LESS=FRSX
@@ -96,6 +101,11 @@ if [ `id -u` != '0' ]; then
   if [ -f /usr/local/bin/virtualenvwrapper.sh ]; then
     export WORKON_HOME=$HOME/.virtualenvs
     source /usr/local/bin/virtualenvwrapper.sh
+  fi
+  if [ -f ~/.local/venvs/virtualenvwrapper/bin/virtualenvwrapper.sh ]; then
+    export WORKON_HOME=$HOME/.virtualenvs
+    export VIRTUALENVWRAPPER_PYTHON=~/.local/venvs/virtualenvwrapper/bin/python
+    source ~/.local/venvs/virtualenvwrapper/bin/virtualenvwrapper.sh
   fi
 fi
 
@@ -185,3 +195,11 @@ alias fixopenwith='/System/Library/Frameworks/CoreServices.framework/Frameworks/
 
 # Python
 export PYTHONSTARTUP=~/.pythonstartup.py
+
+# Extra stuff
+if [ -f ~/.profile_local ]; then
+  source ~/.profile_local
+fi
+
+# Make sure window sizes update correctly.
+shopt -s checkwinsize
