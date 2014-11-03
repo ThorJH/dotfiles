@@ -64,8 +64,8 @@ let g:airline_mode_map = {
   \ '' : 'S',
   \ }
 let g:airline#extensions#whitespace#checks = []
-let g:airline_section_y = airline#section#create_right(['%{printf("%s%s",&fenc,&ff!="unix"?":".&ff:"")}'])
-let g:airline_section_z = airline#section#create_right(['%3l:%2c'])
+" let g:airline_section_y = airline#section#create_right(['%{printf("%s%s",&fenc,&ff!="unix"?":".&ff:"")}'])
+" let g:airline_section_z = airline#section#create_right(['%3l:%2c'])
 let g:airline#extensions#hunks#non_zero_only = 1
 let g:airline#extensions#ctrlp#color_template = 'replace'
 
@@ -169,7 +169,7 @@ nnoremap <leader>ev <C-w><C-s><C-l>:e $MYVIMRC<CR>
 nnoremap <leader>S :%s/\s\+$//<cr>:let @/=''<CR>
 
 " Ack on <leader>a
-nnoremap <leader>a :Ack 
+nnoremap <leader>a :Ack
 nnoremap <leader>A :AckFromSearch<CR>
 
 " <leader>v selects the just pasted text
@@ -218,7 +218,8 @@ nnoremap <Leader>i :syntax sync fromstart<CR>
 " something that looks useful.
 set cmdheight=2
 set laststatus=2
-set statusline=[%l,%v\ %P%M]\ %f\ %r%h%w\ (%{&ff})\ %{fugitive#statusline()}
+" set statusline=[%l,%v\ %P%M]\ %f\ %r%h%w\ (%{&ff})\ %{fugitive#statusline()}
+set statusline=[%l,%v\ %P%M]\ %f\ %r%h%w\ (%{&ff})}
 set showcmd
 set number
 
@@ -427,7 +428,7 @@ autocmd FileType javascript setlocal commentstring=//\ %s
 autocmd FileType javascript noremap <buffer> <leader>r :call JsBeautify()<cr>
 autocmd FileType javascript let b:javascript_fold = 0
 let javascript_enable_domhtmlcss=1
-let g:syntastic_javascript_checkers = ['jshint'] 
+let g:syntastic_javascript_checkers = ['jshint']
 let g:syntastic_javascript_jshint_args='--config ~/.vim/extern-cfg/jshint.json'
 
 " JSON
