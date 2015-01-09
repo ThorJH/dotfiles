@@ -3,6 +3,9 @@
 set nocompatible
 set backspace=indent,eol,start
 
+" Add .bin to path
+let $PATH .= ':' . expand('~/.bin')
+
 " Menus I like :-)
 " This must happen before the syntax system is enabled
 aunmenu Help.
@@ -10,8 +13,16 @@ aunmenu Window.
 let no_buffers_menu=1
 set mousemodel=popup
 
-" Better modes.  Remeber where we are, support yankring
+" Fix some tmux issues
+if &term =~ '256color'
+  set t_ut=
+endif
+
+" Better modes.  Remeber where we are
 set viminfo=!,'100,\"100,:20,<50,s10,h,n~/.viminfo
+
+" Pathogen
+call pathogen#infect()
 
 " Enable Syntax Colors
 "  in GUI mode we go with fruity and Monaco 13
@@ -20,7 +31,7 @@ syntax on
 if has("gui_running")
   colorscheme fruity
   if has("mac")
-    set guifont=Consolas:h13
+    set guifont=Powerline\ Consolas:h13
     set fuoptions=maxvert,maxhorz
     " does not work properly on os x
     " au GUIEnter * set fullscreen
@@ -31,15 +42,39 @@ else
   colorscheme myterm
 endif
 
+" Airline
+if has("gui_running")
+  "let g:airline_theme='solarized'
+  let g:airline_theme='tomorrow'
+  let g:airline_powerline_fonts=1
+else
+  let g:airline_powerline_fonts=0
+endif
+let g:airline_mode_map = {
+  \ '__' : '-',
+  \ 'n' : 'N',
+  \ 'i' : 'I',
+  \ 'R' : 'R',
+  \ 'c' : 'C',
+  \ 'v' : 'V',
+  \ 'V' : 'V',
+  \ '' : 'V',
+  \ 's' : 'S',
+  \ 'S' : 'S',
+  \ '' : 'S',
+  \ }
+let g:airline#extensions#whitespace#checks = []
+" let g:airline_section_y = airline#section#create_right(['%{printf("%s%s",&fenc,&ff!="unix"?":".&ff:"")}'])
+" let g:airline_section_z = airline#section#create_right(['%3l:%2c'])
+let g:airline#extensions#hunks#non_zero_only = 1
+let g:airline#extensions#ctrlp#color_template = 'replace'
+
 " The PC is fast enough, do syntax highlight syncing from start
 autocmd BufEnter * :syntax sync fromstart
 
 " Move Backup Files to ~/.vim/sessions
 set backupdir=~/.vim/sessions
 set dir=~/.vim/sessions
-
-" Pathogen
-call pathogen#infect() 
 
 " Remember cursor position
 au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g`\"" | endif
@@ -53,8 +88,7 @@ set titleold="Terminal"
 set titlestring=%F
 
 " Enable filetype plugins and indention
-filetype on
-filetype plugin on
+filetype plugin indent on
 
 " sets leader to ',' and localleader to "\"
 let mapleader=","
@@ -101,14 +135,28 @@ nnoremap <Up> gk
 vnoremap <Down> gj
 vnoremap <Up> gk
 
+" Always show a gutter
+sign define dummy
+autocmd BufEnter * execute 'sign place 9999 line=1 name=dummy buffer=' . bufnr('')
+
+" Make git gutter less sluggish
+"let g:gitgutter_realtime = 0
+"let g:gitgutter_eager = 0
+
 " Use system keyboard
-set clipboard=unnamed
+"set clipboard=unnamed
 
 " And be global by default
 set gdefault
 
 " hide matches on <leader>space
 nnoremap <leader><space> :nohlsearch<cr>
+
+" autoread
+set autoread
+
+" Autoresize windows
+autocmd VimResized * :wincmd =
 
 " tab for brackets
 nnoremap <tab> %
@@ -121,7 +169,7 @@ nnoremap <leader>ev <C-w><C-s><C-l>:e $MYVIMRC<CR>
 nnoremap <leader>S :%s/\s\+$//<cr>:let @/=''<CR>
 
 " Ack on <leader>a
-nnoremap <leader>a :Ack 
+nnoremap <leader>a :Ack
 nnoremap <leader>A :AckFromSearch<CR>
 
 " <leader>v selects the just pasted text
@@ -131,9 +179,6 @@ nnoremap <leader>v V`]
 nnoremap <leader>t :NERDTree<CR>
 nnoremap <leader>f :NERDTreeFind<CR>
 let NERDTreeIgnore=['\~$', '\.pyc$', '\.pyo$', '\.class$', 'pip-log\.txt$', '\.o$', '\.dSYM$']
-
-" Scratch
-nmap <leader><tab> :Sscratch<CR><C-W>x<C-J>
 
 " Quit window on <leader>q
 nnoremap <leader>q :q<CR>
@@ -147,8 +192,11 @@ nnoremap <leader>Tp :set ft=python<CR>
 nnoremap <leader>Tj :set ft=javascript<CR>
 nnoremap <leader>Tr :set ft=rst<CR>
 
-" Command-T support
-nnoremap <leader>o :CommandT<CR>
+" CTRLP support
+let g:ctrlp_map = '<Leader>o'
+let g:ctrlp_cmd = 'CtrlP'
+let g:ctrlp_match_window = 'bottom,order:top,min:1,max:20'
+nnoremap <leader><tab> :CtrlPMRU<CR>
 
 " toggle between number and relative number on ,l
 nnoremap <leader>l :call ToggleRelativeAbsoluteNumber()<CR>
@@ -170,7 +218,8 @@ nnoremap <Leader>i :syntax sync fromstart<CR>
 " something that looks useful.
 set cmdheight=2
 set laststatus=2
-set statusline=[%l,%v\ %P%M]\ %f\ %r%h%w\ (%{&ff})\ %{fugitive#statusline()}
+" set statusline=[%l,%v\ %P%M]\ %f\ %r%h%w\ (%{&ff})\ %{fugitive#statusline()}
+set statusline=[%l,%v\ %P%M]\ %f\ %r%h%w\ (%{&ff})}
 set showcmd
 set number
 
@@ -236,14 +285,35 @@ cmap W! w !sudo tee % >/dev/null
 set hlsearch
 set incsearch
 
-" map :BufClose to :bq and configure it to open a file browser on close
-let g:BufClose_AltBuffer = '.'
-cnoreabbr <expr> bq 'BufClose' 
+" Make syntastic auto update the location list and make it also check
+" when the file opens
+let g:syntastic_always_populate_loc_list=1
+let g:syntastic_check_on_open=1
+
+" Location bindings
+noremap <leader>e :lopen<CR>
+noremap <leader>] :lnext<CR>
+noremap <leader>[ :lprev<CR>
+
+" map :bq to ,bd which comes from kwbdi to close a buffer
+cnoreabbr <expr> bq 'normal <leader>bd<CR>'
+
+" Small helper that inserts a random uuid4 on ^U
+" ----------------------------------------------
+fun! InsertUUID4()
+python << endpython
+if 1:
+    import uuid, vim
+    vim.command('return "%s"' % str(uuid.uuid4()))
+endpython
+endfun
+inoremap <c-u> <C-R>=InsertUUID4()<CR>
 
 " Colorcolumns
-if version >= 730
+if version >= 703
   autocmd FileType * setlocal colorcolumn=0
-  autocmd FileType ruby,python,javascript,c,cpp,objc setlocal colorcolumn=79
+  autocmd FileType ruby,python,javascript,c,cpp,objc,rst
+    \ let &colorcolumn="80,".join(range(84,300),",")
 endif
 
 " python support
@@ -252,13 +322,26 @@ endif
 "  scopes and it sucks ass if it's highlighted then. And for exceptions I
 "  don't really want to have different colors for my own exceptions ;-)
 autocmd FileType python setlocal expandtab shiftwidth=4 tabstop=8
-\ formatoptions+=croq softtabstop=4 smartindent
-\ cinwords=if,elif,else,for,while,try,except,finally,def,class,with
+\ formatoptions=croqj softtabstop=4 textwidth=74 comments=:#\:,:#
 let python_highlight_all=1
 let python_highlight_exceptions=0
 let python_highlight_builtins=0
 let python_slow_sync=1
-autocmd FileType pyrex setlocal expandtab shiftwidth=4 tabstop=8 softtabstop=4 smartindent cinwords=if,elif,else,for,while,try,except,finally,def,class,with
+
+let g:syntastic_python_checkers=['flake8', 'python']
+
+" Don't warn on
+"   E121 continuation line indentation is not a multiple of four
+"   E128 continuation line under-indented for visual indent
+"   E711 comparison to None should be 'if cond is not None:'
+"   E301 expected 1 blank line, found 0
+"   E261 at least two spaces before inline comment
+"   E241 multiple spaces after ':'
+"   E124 closing bracket does not match visual indentation
+"   E126 continuation line over-indented for hanging indent
+"   E721 do not compare types, use 'isinstance()'
+let g:syntastic_python_flake8_args='--ignore=E121,E128,E711,E301,E261,E241,E124,E126,E721
+    \ --max-line-length=84'
 
 " ruby support
 " ------------
@@ -275,46 +358,14 @@ autocmd FileType php setlocal shiftwidth=4 tabstop=8 softtabstop=4 expandtab
 
 " template language support (SGML / XML too)
 " ------------------------------------------
-" and disable taht stupid html rendering (like making stuff bold etc)
-
-fun! s:SelectHTML()
-let n = 1
-while n < 50 && n < line("$")
-  " check for jinja
-  if getline(n) =~ '{%\s*\(extends\|block\|macro\|set\|if\|for\|include\|trans\)\>'
-    setlocal ft=htmljinja
-    return
-  endif
-  " check for mako
-    if getline(n) =~ '<%\(def\|inherit\)'
-      setlocal ft=mako
-      return
-    endif
-    " check for genshi
-    if getline(n) =~ 'xmlns:py\|py:\(match\|for\|if\|def\|strip\|xmlns\)'
-      setlocal ft=genshi
-      return
-    endif
-    let n = n + 1
-  endwhile
-  " go with html
-  setlocal ft=html
-endfun
-
-autocmd FileType html,xhtml,xml,htmldjango,htmljinja,eruby,mako setlocal expandtab shiftwidth=2 tabstop=2 softtabstop=2
-autocmd bufnewfile,bufread *.rhtml setlocal ft=eruby
-autocmd BufNewFile,BufRead *.mako setlocal ft=mako
-autocmd BufNewFile,BufRead *.tmpl setlocal ft=htmljinja
-autocmd BufNewFile,BufRead *.py_tmpl setlocal ft=python
-autocmd BufNewFile,BufRead *.html,*.htm  call s:SelectHTML()
-let html_no_rendering=1
-
-let g:closetag_default_xml=1
-let g:sparkupNextMapping='<c-l>'
-autocmd FileType html,htmldjango,htmljinja,eruby,mako let b:closetag_html_style=1
-autocmd FileType html,xhtml,xml,htmldjango,htmljinja,eruby,mako source ~/.vim/scripts/closetag.vim
-autocmd FileType html,xhtml setlocal commentstring=<!--\ %s\ -->
+" and disable that stupid html rendering (like making stuff bold etc)
+autocmd FileType xml,html,htmljinja,htmldjango setlocal expandtab shiftwidth=2 tabstop=2 softtabstop=2
+autocmd FileType html,htmljinja,htmldjango imap <buffer> <c-e> <Plug>SparkupExecute
+autocmd FileType html,htmljinja,htmldjango imap <buffer> <c-l> <Plug>SparkupNext
+autocmd FileType html setlocal commentstring=<!--\ %s\ -->
 autocmd FileType htmljinja setlocal commentstring={#\ %s\ #}
+let html_no_rendering=1
+let g:syntastic_html_checkers = []
 
 " GLSL
 " ----
@@ -330,18 +381,22 @@ autocmd FileType verilog setlocal expandtab shiftwidth=2 tabstop=8 softtabstop=2
 " ---
 autocmd FileType css setlocal expandtab shiftwidth=4 tabstop=4 softtabstop=4
 autocmd FileType css setlocal commentstring=/*\ %s\ */
+autocmd FileType css noremap <buffer> <leader>r :call CSSBeautify()<cr>
+
+" Less
+" ----
+autocmd FileType less setlocal expandtab shiftwidth=2 tabstop=8 softtabstop=2
 
 " Java
 " ----
 autocmd FileType java setlocal shiftwidth=2 tabstop=8 softtabstop=2 expandtab
-autocmd FileType css setlocal commentstring=// %s
+autocmd FileType java setlocal commentstring=//\ %s
 
 " rst
 " ---
 autocmd BufNewFile,BufRead *.txt setlocal ft=rst
 autocmd FileType rst setlocal expandtab shiftwidth=4 tabstop=4 softtabstop=4
 \ formatoptions+=nqt textwidth=74
-autocmd FileType css setlocal commentstring=..\ %s
 
 " C#
 autocmd FileType cs setlocal tabstop=8 softtabstop=4 shiftwidth=4 expandtab
@@ -354,6 +409,10 @@ autocmd FileType objc setlocal tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 autocmd FileType c setlocal commentstring=/*\ %s\ */
 autocmd FileType cpp,objc setlocal commentstring=//\ %s
 let c_no_curly_error=1
+let g:syntastic_cpp_include_dirs = ['include', '../include']
+let g:syntastic_cpp_compiler = 'clang++'
+let g:syntastic_c_include_dirs = ['include', '../include']
+let g:syntastic_c_compiler = 'clang'
 
 " Octave/Matlab
 autocmd FileType matlab setlocal tabstop=8 softtabstop=2 shiftwidth=2 expandtab
@@ -365,9 +424,20 @@ autocmd FileType vim setlocal expandtab shiftwidth=2 tabstop=8 softtabstop=2
 " Javascript
 " ----------
 autocmd FileType javascript setlocal expandtab shiftwidth=2 tabstop=2 softtabstop=2
-autocmd BufNewFile,BufRead *.json setlocal ft=javascript
 autocmd FileType javascript setlocal commentstring=//\ %s
+autocmd FileType javascript noremap <buffer> <leader>r :call JsBeautify()<cr>
+autocmd FileType javascript let b:javascript_fold = 0
 let javascript_enable_domhtmlcss=1
+let g:syntastic_javascript_checkers = ['jshint']
+let g:syntastic_javascript_jshint_args='--config ~/.vim/extern-cfg/jshint.json'
+
+" JSON
+" ----
+autocmd FileType json setlocal expandtab shiftwidth=2 tabstop=2 softtabstop=2
+
+" Typescript
+" ----------
+let g:syntastic_typescript_checkers = []
 
 " CoffeeScript
 " ------------
@@ -399,18 +469,3 @@ autocmd FileType lua setlocal shiftwidth=2 tabstop=2 softtabstop=2
 " ----
 autocmd FileType rust setlocal expandtab shiftwidth=4 tabstop=8 softtabstop=4
 autocmd FileType rust setlocal commentstring=//\ %s
-
-" Small helper that inserts a random uuid4
-" ----------------------------------------
-nnoremap <leader>4 :call InsertUUID4()<CR>
-function! InsertUUID4()
-python << endpython
-if 1:
-    import uuid, vim
-    s = str(uuid.uuid4())
-    cpos = vim.current.window.cursor
-    cline = vim.current.line
-    vim.current.line = cline[:cpos[1] + 1] + s + cline[cpos[1] + 1:]
-    vim.current.window.cursor = (cpos[0], cpos[1] + len(s))
-endpython
-endfunction
